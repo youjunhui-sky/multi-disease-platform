@@ -1,7 +1,7 @@
 <template>
   <div class="app-sidebar" :class="{ collapsed: isCollapse }">
     <div class="sidebar-logo">
-      <span v-if="!isCollapse" class="logo-text">权限平台</span>
+      <span v-if="!isCollapse" class="logo-text">{{ systemConfig.name }}</span>
     </div>
     <el-menu
       :default-active="activeMenu"
@@ -53,6 +53,7 @@ import {
   Grid
 } from '@element-plus/icons-vue'
 import { usePermissionStore } from '@/stores/permission'
+import { systemConfig } from '@/utils/config'
 
 interface Props {
   collapsed?: boolean
@@ -72,21 +73,31 @@ const activeMenu = computed(() => route.path)
 // Use menus from backend store, fallback to static menus
 const menuItems = computed(() => {
   const backendMenus = permissionStore.menus
+  // Debug: log menu data
   if (backendMenus && backendMenus.length > 0) {
-    return backendMenus.map((menu: any) => ({
-      path: menu.path,
-      meta: {
-        title: menu.meta?.title || menu.name,
-        icon: menu.icon
-      },
-      children: menu.children?.map((child: any) => ({
-        path: child.path,
+    console.log('Menu data:', JSON.stringify(backendMenus, null, 2))
+    console.log('First menu path:', backendMenus[0]?.path)
+    console.log('First menu children:', backendMenus[0]?.children)
+  }
+  if (backendMenus && backendMenus.length > 0) {
+    return backendMenus.map((menu: any) => {
+      const item = {
+        path: menu.path || '',
         meta: {
-          title: child.meta?.title || child.name,
-          icon: child.icon
-        }
-      }))
-    }))
+          title: menu.name,
+          icon: menu.icon
+        },
+        children: menu.children?.map((child: any) => ({
+          path: child.path || '',
+          meta: {
+            title: child.name,
+            icon: child.icon
+          }
+        })) || []
+      }
+      console.log('Mapped menu item:', item)
+      return item
+    })
   }
 
   // Fallback to static menus if no backend menus

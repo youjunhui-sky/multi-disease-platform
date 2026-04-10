@@ -120,7 +120,9 @@
       "Bash(zip -r demo3-git.zip .git -x \"*.node_modules*\" -x \"*dist*\")",
       "Bash(pip install:*)",
       "Read(//c/Users/luope/**)",
-      "Bash(curl -u \"root:You@890209\" ssh://root@36.111.159.23/mnt/sdc/gitrepos/demo3.git/info/refs)"
+      "Bash(curl -u \"root:You@890209\" ssh://root@36.111.159.23/mnt/sdc/gitrepos/demo3.git/info/refs)",
+      "Bash(rm -rf d:/git/multi-disease-platform/frontend/node_modules)",
+      "Bash(rm -f d:/git/multi-disease-platform/frontend/package-lock.json)"
     ]
   }
 }

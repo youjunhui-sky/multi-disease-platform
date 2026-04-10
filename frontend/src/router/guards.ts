@@ -2,6 +2,7 @@ import type { NavigationGuardNext, RouteLocationNormalized } from 'vue-router'
 import { storage } from '@/utils/storage'
 import { usePermissionStore } from '@/stores/permission'
 import { authApi } from '@/api/auth'
+import { systemConfig } from '@/utils/config'
 import NProgress from 'nprogress'
 import 'nprogress/nprogress.css'
 
@@ -52,7 +53,7 @@ export const setupRouterGuards = (router: any) => {
   })
 
   router.afterEach((to: RouteLocationNormalized) => {
-    document.title = to.meta.title ? `${to.meta.title} - 医院权限管理平台` : '医院权限管理平台'
+    document.title = to.meta.title ? `${to.meta.title} - ${systemConfig.name}` : systemConfig.name
     NProgress.done()
   })
 

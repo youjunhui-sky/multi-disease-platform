@@ -2,8 +2,8 @@
   <div class="login-container">
     <div class="login-box">
       <div class="login-header">
-        <h1 class="login-title">医院统一管理平台</h1>
-        <p class="login-subtitle">Hospital Management System</p>
+        <h1 class="login-title">{{ systemConfig.name }}</h1>
+        <p class="login-subtitle">{{ systemConfig.nameEn }}</p>
       </div>
 
       <el-form
@@ -74,12 +74,7 @@
       </div>
     </div>
 
-    <div class="login-bg">
-      <div class="bg-content">
-        <h2>Unified Permission Management</h2>
-        <p>Centralized management of users, roles, menus, and subsystems</p>
-      </div>
-    </div>
+   
   </div>
 </template>
 
@@ -91,6 +86,7 @@ import { useUser } from '@/composables/useUser'
 import { useSubsystem } from '@/composables/useSubsystem'
 import { storage } from '@/utils/storage'
 import { authApi } from '@/api/auth'
+import { systemConfig } from '@/utils/config'
 
 const router = useRouter()
 const { login, fetchPlatformMenus } = useUser()
@@ -191,20 +187,26 @@ const handleLogin = async () => {
 .login-container {
   display: flex;
   min-height: 100vh;
-  background: #fff;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  justify-content: center;
+  align-items: center;
 }
 
 .login-box {
-  flex: 0 0 50%;
-  max-width: 500px;
-  padding: 60px;
+  width: 100%;
+  max-width: 420px;
+  padding: 40px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
   display: flex;
   flex-direction: column;
   justify-content: center;
 }
 
 .login-header {
-  margin-bottom: 40px;
+  margin-bottom: 32px;
+  text-align: center;
 }
 
 .login-title {
@@ -220,7 +222,7 @@ const handleLogin = async () => {
 }
 
 .login-form {
-  max-width: 320px;
+  width: 100%;
 }
 
 .captcha-row {
@@ -260,40 +262,10 @@ const handleLogin = async () => {
   color: #909399;
 }
 
-.login-bg {
-  flex: 1;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
-}
-
-.bg-content {
-  text-align: center;
-  max-width: 400px;
-}
-
-.bg-content h2 {
-  font-size: 36px;
-  font-weight: 700;
-  margin-bottom: 16px;
-  color: #fff;
-}
-
-.bg-content p {
-  font-size: 18px;
-  opacity: 0.9;
-}
-
 @media (max-width: 768px) {
-  .login-bg {
-    display: none;
-  }
-
   .login-box {
-    flex: 1;
-    padding: 40px 20px;
+    margin: 20px;
+    padding: 30px 20px;
   }
 }
 </style>

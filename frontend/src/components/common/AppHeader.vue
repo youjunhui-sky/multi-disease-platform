@@ -5,7 +5,7 @@
         <Fold v-if="!layoutStore.sidebarCollapsed" />
         <Expand v-else />
       </el-icon>
-      <div class="system-title">医院统一权限管理平台</div>
+      <div class="system-title">{{ systemConfig.name }}</div>
     </div>
     <div class="header-right">
       <el-dropdown @command="handleCommand" trigger="click">
@@ -78,6 +78,7 @@ import { Fold, Expand, User, Lock, SwitchButton, ArrowDown } from '@element-plus
 import { useUserStore } from '@/stores/user'
 import { useLayoutStore } from '@/stores/layout'
 import { authApi } from '@/api/auth'
+import { systemConfig } from '@/utils/config'
 
 const router = useRouter()
 const emit = defineEmits(['toggle-sidebar'])

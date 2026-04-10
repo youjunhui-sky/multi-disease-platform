@@ -53,13 +53,17 @@ const handleClick = () => {
 <style scoped>
 .subsystem-card {
   display: flex;
-  align-items: center;
+  align-items: stretch;
+  justify-content: space-between;
+  width: 100%;
   padding: 20px;
+  min-height: 120px;
   background: #fff;
   border: 1px solid #e8e8e8;
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.3s;
+  box-sizing: border-box;
 }
 
 .subsystem-card:hover {
@@ -88,6 +92,8 @@ const handleClick = () => {
 .card-content {
   flex: 1;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .card-title {

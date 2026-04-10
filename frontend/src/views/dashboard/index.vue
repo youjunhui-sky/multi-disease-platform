@@ -85,6 +85,11 @@ const handleSubsystemClick = (subsystem: any) => {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 16px;
+  align-items: stretch;
+}
+
+.subsystem-grid > * {
+  width: 100%;
 }
 
 @media (max-width: 1200px) {

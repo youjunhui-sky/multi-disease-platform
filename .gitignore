@@ -3,3 +3,5 @@ dist/
 *.log
 .DS_Store
 *.tgz
+settings.local.json
+.claude/settings.local.json

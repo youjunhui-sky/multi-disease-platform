@@ -102,6 +102,15 @@ export const routes: RouteRecordRaw[] = [
               title: '字典管理',
               icon: 'dictionary'
             }
+          },
+          {
+            path: 'questionnaire',
+            name: 'QuestionnaireManagement',
+            component: () => import('@/views/platform/base-data/questionnaire/index.vue'),
+            meta: {
+              title: '问卷管理',
+              icon: 'document'
+            }
           }
         ]
       }

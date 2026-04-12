@@ -21,6 +21,10 @@ async function seed() {
   await AppDataSource.initialize();
   console.log('Database connected');
 
+  // Alter permission column to accommodate longer permission strings
+  await AppDataSource.query("ALTER TABLE base.sys_menu ALTER COLUMN permission TYPE varchar(500);");
+  console.log('Altered permission column to varchar(500)');
+
   const orgRepo = AppDataSource.getRepository(Organization);
   const userRepo = AppDataSource.getRepository(User);
   const roleRepo = AppDataSource.getRepository(Role);
@@ -121,66 +125,44 @@ async function seed() {
   }
 
   // =============================================================
-  // Platform menus will be created below
-  const allMenus = await menuRepo.find();
-  const existingPlatformMenus = allMenus.filter(m => !m.subsystemId);
-  if (existingPlatformMenus.length === 0) {
-    const platformMenuData = [
-      // 平台一级菜单
-      { subsystemId: null, parentId: null, name: '工作台', code: 'platform:dashboard', path: '/dashboard', component: '/dashboard/index', icon: 'home', sortOrder: 0, type: 'menu', isVisible: true },
-      { subsystemId: null, parentId: null, name: '子系统访问', code: 'platform:subsystem', path: '/subsystem-access', component: '/subsystem-access/index', icon: 'app', sortOrder: 1, type: 'menu', isVisible: true },
-      { subsystemId: null, parentId: null, name: '系统管理', code: 'platform:system', path: '/system-management', component: '', icon: 'setting', sortOrder: 99, type: 'menu', isVisible: true },
-      // 子菜单 - 系统管理
-      { subsystemId: null, parentId: null, name: '用户管理', code: 'platform:user', path: '/system-management/user', component: '/system-management/user/index', icon: 'user', sortOrder: 0, type: 'menu', isVisible: true, permission: 'user:create,user:update,user:roles,user:reset-password,user:disable,user:enable,user:delete' },
-      { subsystemId: null, parentId: null, name: '角色管理', code: 'platform:role', path: '/system-management/role', component: '/system-management/role/index', icon: 'role', sortOrder: 1, type: 'menu', isVisible: true, permission: 'role:create,role:update,role:delete' },
-      { subsystemId: null, parentId: null, name: '菜单管理', code: 'platform:menu', path: '/system-management/menu', component: '/system-management/menu/index', icon: 'menu', sortOrder: 2, type: 'menu', isVisible: true, permission: 'menu:create,menu:update,menu:delete' },
-      { subsystemId: null, parentId: null, name: '子系统管理', code: 'platform:subsystem', path: '/system-management/subsystem', component: '/system-management/subsystem/index', icon: 'app', sortOrder: 3, type: 'menu', isVisible: true, permission: 'subsystem:create,subsystem:update,subsystem:delete' },
-      // 审计日志
-      { subsystemId: null, parentId: null, name: '审计日志', code: 'platform:audit', path: '/audit', component: '/audit/index', icon: 'document', sortOrder: 100, type: 'menu', isVisible: true },
-    ];
-    await menuRepo.save(platformMenuData);
-    console.log('Platform Menus created');
-  } else {
-    console.log('Platform Menus already exist, updating parent relationships...');
+  // Check and create questionnaire menu only
+  const existingQuestionnaire = await menuRepo.findOne({ where: { code: 'platform:questionnaire', subsystemId: IsNull() } });
+  if (!existingQuestionnaire) {
+    // Check if base-data menu exists
+    const baseDataMenu = await menuRepo.findOne({ where: { code: 'platform:base-data', subsystemId: IsNull() } });
 
-    // Update existing platform menus to have status=1
-    await menuRepo.update({ subsystemId: IsNull() }, { status: 1 });
-    console.log('Updated platform menus status to 1');
+    if (baseDataMenu) {
+      // Create questionnaire menu under base-data
+      await menuRepo.save({
+        subsystemId: null,
+        parentId: baseDataMenu.id,
+        name: '问卷管理',
+        code: 'platform:questionnaire',
+        path: '/base-data/questionnaire',
+        component: '/platform/questionnaire/index',
+        icon: 'document',
+        sortOrder: 1,
+        type: 'menu',
+        isVisible: true,
+        permission: 'questionnaire:create,questionnaire:update,questionnaire:delete,questionnaire:publish,questionnaire:design'
+      });
+      console.log('Questionnaire menu created under base-data');
+    } else {
+      // Create both base-data and questionnaire
+      await menuRepo.save([
+        { subsystemId: null, parentId: null, name: '基础数据', code: 'platform:base-data', path: '/base-data', component: '', icon: 'setting', sortOrder: 50, type: 'menu', isVisible: true },
+        { subsystemId: null, parentId: null, name: '问卷管理', code: 'platform:questionnaire', path: '/base-data/questionnaire', component: '/platform/questionnaire/index', icon: 'document', sortOrder: 1, type: 'menu', isVisible: true, permission: 'questionnaire:create,questionnaire:update,questionnaire:delete,questionnaire:publish,questionnaire:design' }
+      ]);
+      console.log('Base data and questionnaire menus created');
 
-    // Fetch existing platform menus to set parent relationships
-    const platformMenus = await menuRepo.find({ where: { subsystemId: IsNull() } });
-
-    // Find parent menus by code
-    const systemManageMenu = platformMenus.find(m => m.code === 'platform:system');
-    const dashboardMenu = platformMenus.find(m => m.code === 'platform:dashboard');
-    const subsystemMenu = platformMenus.find(m => m.code === 'platform:subsystem');
-    const auditMenu = platformMenus.find(m => m.code === 'platform:audit');
-
-    if (systemManageMenu) {
-      // Update children of 系统管理
-      const userMenu = platformMenus.find(m => m.code === 'platform:user');
-      const roleMenu = platformMenus.find(m => m.code === 'platform:role');
-      const menuManageMenu = platformMenus.find(m => m.code === 'platform:menu');
-      const subsystemManageMenu = platformMenus.find(m => m.code === 'platform:subsystem');
-
-      if (userMenu) {
-        userMenu.parentId = systemManageMenu.id;
-        await menuRepo.save(userMenu);
+      // Set parent relationship
+      const newMenus = await menuRepo.find({ where: { subsystemId: IsNull(), code: 'platform:base-data' } });
+      if (newMenus[0]) {
+        await menuRepo.update({ code: 'platform:questionnaire' }, { parentId: newMenus[0].id });
       }
-      if (roleMenu) {
-        roleMenu.parentId = systemManageMenu.id;
-        await menuRepo.save(roleMenu);
-      }
-      if (menuManageMenu) {
-        menuManageMenu.parentId = systemManageMenu.id;
-        await menuRepo.save(menuManageMenu);
-      }
-      if (subsystemManageMenu) {
-        subsystemManageMenu.parentId = systemManageMenu.id;
-        await menuRepo.save(subsystemManageMenu);
-      }
-      console.log('Platform menu parent relationships updated');
     }
+  } else {
+    console.log('Questionnaire menu already exists, skipping');
   }
 
   // =============================================================

@@ -62,7 +62,7 @@ export class Menu {
   @Column({ type: 'varchar', nullable: true })
   type: string | null;
 
-  @Column({ type: 'varchar', length: 100, nullable: true })
+  @Column({ type: 'varchar', length: 500, nullable: true })
   permission: string | null;
 
   @Column({ type: 'boolean', name: 'is_visible', default: true })

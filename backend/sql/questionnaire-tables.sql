@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS base.tsys_questionnaire (
     title VARCHAR(255) NOT NULL COMMENT '问卷标题',
     description TEXT COMMENT '问卷描述',
     creator_id INT COMMENT '创建人ID',
+    org_id UUID COMMENT '机构ID',
     published BOOLEAN DEFAULT false COMMENT '是否发布',
     deleted_at TIMESTAMP COMMENT '删除时间',
     sort INT DEFAULT 0 COMMENT '排序',

@@ -80,6 +80,7 @@ export class AuthService {
       dataScope: 5,
       subsystemCodes: [],
       deptId: null,
+      orgId: user.orgId,
     };
 
     // Generate UUID for token identification
@@ -192,6 +193,7 @@ export class AuthService {
       realName: user.realName,
       email: user.email,
       phone: user.phone,
+      orgId: user.orgId,
     };
   }
 

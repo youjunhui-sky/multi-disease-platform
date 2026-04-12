@@ -7,10 +7,14 @@ import {
   Param,
   Query,
   Body,
+  Req,
   HttpCode,
   HttpStatus,
+  ParseIntPipe,
 } from '@nestjs/common';
+import { Request } from 'express';
 import { QuestionnaireService } from './questionnaire.service';
+import { DataPermissionService } from '../data-permission/data-permission.service';
 import {
   CreateQuestionnaireDto,
   UpdateQuestionnaireDto,
@@ -21,13 +25,21 @@ import {
 
 @Controller('questionnaire')
 export class QuestionnaireController {
-  constructor(private readonly questionnaireService: QuestionnaireService) {}
+  constructor(
+    private readonly questionnaireService: QuestionnaireService,
+    private readonly dataPermissionService: DataPermissionService,
+  ) {}
 
   /**
    * 分页查询问卷列表
    */
   @Get()
-  async findAll(@Query() query: QueryQuestionnaireDto) {
+  async findAll(@Query() query: QueryQuestionnaireDto, @Req() req: Request) {
+    const user = req.user as any;
+    if (user?.sub) {
+      const accessibleOrgs = await this.dataPermissionService.getUserAccessibleOrgIds(user.sub, user.orgId);
+      query.accessibleOrgs = accessibleOrgs;
+    }
     return this.questionnaireService.findAll(query);
   }
 
@@ -35,7 +47,7 @@ export class QuestionnaireController {
    * 获取问卷详情
    */
   @Get(':id')
-  async findById(@Param('id') id: number) {
+  async findById(@Param('id', ParseIntPipe) id: number) {
     return this.questionnaireService.findById(id);
   }
 
@@ -43,7 +55,7 @@ export class QuestionnaireController {
    * 获取问卷详情（含问题和选项）
    */
   @Get(':id/detail')
-  async getDetail(@Param('id') id: number) {
+  async getDetail(@Param('id', ParseIntPipe) id: number) {
     return this.questionnaireService.getDetail(id);
   }
 
@@ -51,7 +63,7 @@ export class QuestionnaireController {
    * 获取问卷的问题和选项
    */
   @Get(':id/questions')
-  async getQuestions(@Param('id') id: number) {
+  async getQuestions(@Param('id', ParseIntPipe) id: number) {
     return this.questionnaireService.getQuestionsWithOptions(id);
   }
 
@@ -67,7 +79,7 @@ export class QuestionnaireController {
    * 更新问卷
    */
   @Put(':id')
-  async update(@Param('id') id: number, @Body() dto: UpdateQuestionnaireDto) {
+  async update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateQuestionnaireDto) {
     return this.questionnaireService.update(id, dto);
   }
 
@@ -76,7 +88,7 @@ export class QuestionnaireController {
    */
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async remove(@Param('id') id: number) {
+  async remove(@Param('id', ParseIntPipe) id: number) {
     await this.questionnaireService.remove(id);
   }
 
@@ -84,7 +96,7 @@ export class QuestionnaireController {
    * 发布问卷
    */
   @Post(':id/publish')
-  async publish(@Param('id') id: number) {
+  async publish(@Param('id', ParseIntPipe) id: number) {
     await this.questionnaireService.publish(id);
     return { message: '问卷已发布' };
   }
@@ -93,7 +105,7 @@ export class QuestionnaireController {
    * 取消发布问卷
    */
   @Post(':id/unpublish')
-  async unpublish(@Param('id') id: number) {
+  async unpublish(@Param('id', ParseIntPipe) id: number) {
     await this.questionnaireService.unpublish(id);
     return { message: '问卷已取消发布' };
   }
@@ -119,7 +131,7 @@ export class QuestionnaireController {
    * 获取答卷列表
    */
   @Get(':id/answers')
-  async getAnswers(@Param('id') id: number) {
+  async getAnswers(@Param('id', ParseIntPipe) id: number) {
     return this.questionnaireService.getAnswerSheets(id);
   }
 
@@ -127,7 +139,7 @@ export class QuestionnaireController {
    * 获取答卷详情
    */
   @Get('answer/:id')
-  async getAnswerDetail(@Param('id') id: number) {
+  async getAnswerDetail(@Param('id', ParseIntPipe) id: number) {
     return this.questionnaireService.getAnswerSheetDetail(id);
   }
 }

@@ -5,6 +5,7 @@ interface Questionnaire {
   title: string
   description: string | null
   creatorId: number | null
+  orgId: string | null
   published: boolean
   sort: number
   deletedAt: Date | null
@@ -43,7 +44,7 @@ export const questionnaireApi = {
   /**
    * 获取问卷列表
    */
-  getList(params?: { page?: number; pageSize?: number; keyword?: string }) {
+  getList(params?: { page?: number; pageSize?: number; keyword?: string; orgId?: string | null }) {
     return request.get<PageResult<Questionnaire>>('/questionnaire', params)
   },
 
@@ -71,14 +72,14 @@ export const questionnaireApi = {
   /**
    * 创建问卷
    */
-  create(data: { title: string; description?: string; sort?: number }) {
+  create(data: { title: string; description?: string; sort?: number; orgId?: string | null }) {
     return request.post<Questionnaire>('/questionnaire', data)
   },
 
   /**
    * 更新问卷
    */
-  update(id: number, data: { title?: string; description?: string; sort?: number; published?: boolean }) {
+  update(id: number, data: { title?: string; description?: string; sort?: number; published?: boolean; orgId?: string | null }) {
     return request.put<Questionnaire>(`/questionnaire/${id}`, data)
   },
 

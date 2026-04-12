@@ -21,6 +21,7 @@ import { MenuModule } from './modules/platform/menu/menu.module';
 import { OrganizationModule } from './modules/platform/organization/organization.module';
 import { SubsystemModule } from './modules/platform/subsystem/subsystem.module';
 import { QuestionnaireModule } from './modules/platform/questionnaire/questionnaire.module';
+import { DataPermissionModule } from './modules/platform/data-permission/data-permission.module';
 import { HisModule } from './modules/subsystems/his/his.module';
 import { LisModule } from './modules/subsystems/lis/lis.module';
 import { PacsModule } from './modules/subsystems/pacs/pacs.module';
@@ -103,6 +104,7 @@ import {
     AuditModule,
     OrganizationModule,
     QuestionnaireModule,
+    DataPermissionModule,
     HisModule,
     LisModule,
     PacsModule,

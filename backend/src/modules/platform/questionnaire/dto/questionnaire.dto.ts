@@ -75,6 +75,10 @@ export class CreateQuestionnaireDto {
   @IsOptional()
   creatorId?: number;
 
+  @IsString()
+  @IsOptional()
+  orgId?: string;
+
   @IsBoolean()
   @IsOptional()
   published?: boolean;
@@ -103,6 +107,10 @@ export class UpdateQuestionnaireDto {
   @IsNumber()
   @IsOptional()
   sort?: number;
+
+  @IsString()
+  @IsOptional()
+  orgId?: string;
 }
 
 /**
@@ -122,6 +130,15 @@ export class QueryQuestionnaireDto {
   @IsString()
   @IsOptional()
   keyword?: string;
+
+  @IsString()
+  @IsOptional()
+  orgId?: string;
+
+  @IsArray()
+  @IsOptional()
+  @Type(() => String)
+  accessibleOrgs?: string[];
 }
 
 /**

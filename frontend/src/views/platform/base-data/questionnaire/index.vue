@@ -15,6 +15,16 @@
         <el-form-item label="关键词">
           <el-input v-model="searchForm.keyword" placeholder="问卷标题" clearable />
         </el-form-item>
+        <el-form-item label="机构">
+          <el-select v-model="searchForm.orgId" placeholder="请选择机构" clearable style="width: 180px">
+            <el-option
+              v-for="org in orgList"
+              :key="org.id"
+              :label="org.name"
+              :value="org.id"
+            />
+          </el-select>
+        </el-form-item>
         <el-form-item>
           <el-button type="primary" @click="handleSearch">
             <el-icon><Search /></el-icon>
@@ -36,6 +46,11 @@
         :header-cell-style="{ background: '#f5f7fa', color: '#333' }"
       >
         <el-table-column type="index" label="序号" width="60" align="center" />
+        <el-table-column prop="orgName" label="机构" width="150" align="center">
+          <template #default="{ row }">
+            {{ getOrgName(row.orgId) }}
+          </template>
+        </el-table-column>
         <el-table-column prop="title" label="问卷标题" min-width="200" show-overflow-tooltip />
         <el-table-column prop="description" label="问卷描述" min-width="200" show-overflow-tooltip />
         <el-table-column prop="sort" label="排序" width="80" align="center" />
@@ -91,6 +106,16 @@
         <el-form-item label="问卷描述" prop="description">
           <el-input v-model="form.description" type="textarea" :rows="3" placeholder="请输入问卷描述" />
         </el-form-item>
+        <el-form-item label="机构" prop="orgId">
+          <el-select v-model="form.orgId" placeholder="请选择机构" clearable style="width: 100%">
+            <el-option
+              v-for="org in orgList"
+              :key="org.id"
+              :label="org.name"
+              :value="org.id"
+            />
+          </el-select>
+        </el-form-item>
         <el-form-item label="排序" prop="sort">
           <el-input-number v-model="form.sort" :min="0" :max="9999" />
         </el-form-item>
@@ -139,13 +164,16 @@ import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox, FormInstance, FormRules } from 'element-plus'
 import { Plus, Search, Refresh } from '@element-plus/icons-vue'
 import { questionnaireApi } from '@/api/questionnaire'
+import { organizationApi } from '@/api/organization'
+import { dataPermissionApi } from '@/api/data-permission'
 import SurveyDesigner from './components/survey-designer.vue'
 import Survey from './components/survey.vue'
 import PreviewDialog from './components/preview-dialog.vue'
 
 // 搜索表单
 const searchForm = reactive({
-  keyword: ''
+  keyword: '',
+  orgId: null as string | null
 })
 
 // 表格数据
@@ -170,12 +198,19 @@ const currentQuestionnaireId = ref<number>(0)
 const previewQuestions = ref<any[]>([])
 const currentQuestionnaireTitle = ref<string>('')
 
+// 机构列表
+const orgList = ref<any[]>([])
+
+// 用户可访问的机构ID列表，空数组表示全部权限
+const accessibleOrgIds = ref<string[]>([])
+
 // 表单数据
 const form = reactive({
   id: 0,
   title: '',
   description: '',
-  sort: 0
+  sort: 0,
+  orgId: null as string | null
 })
 
 // 表单校验
@@ -190,7 +225,8 @@ const fetchData = async () => {
     const res = await questionnaireApi.getList({
       page: pagination.page,
       pageSize: pagination.pageSize,
-      keyword: searchForm.keyword
+      keyword: searchForm.keyword,
+      orgId: searchForm.orgId
     })
     tableData.value = (res as any).data?.data || []
     pagination.total = (res as any).data?.data?.total || (res as any).data?.total || 0
@@ -210,6 +246,7 @@ const handleSearch = () => {
 // 重置
 const handleReset = () => {
   searchForm.keyword = ''
+  searchForm.orgId = null
   pagination.page = 1
   fetchData()
 }
@@ -221,6 +258,7 @@ const handleAdd = () => {
   form.title = ''
   form.description = ''
   form.sort = 0
+  form.orgId = null
   dialogVisible.value = true
 }
 
@@ -231,6 +269,7 @@ const handleEdit = async (row: any) => {
   form.title = row.title
   form.description = row.description || ''
   form.sort = row.sort || 0
+  form.orgId = row.orgId || null
   dialogVisible.value = true
 }
 
@@ -245,14 +284,16 @@ const handleSubmit = async () => {
       await questionnaireApi.update(form.id, {
         title: form.title,
         description: form.description,
-        sort: form.sort
+        sort: form.sort,
+        orgId: form.orgId
       })
       ElMessage.success('更新成功')
     } else {
       await questionnaireApi.create({
         title: form.title,
         description: form.description,
-        sort: form.sort
+        sort: form.sort,
+        orgId: form.orgId
       })
       ElMessage.success('创建成功')
     }
@@ -336,8 +377,39 @@ const onDesignerSave = () => {
   fetchData()
 }
 
+// 加载机构列表
+const loadOrganizations = async () => {
+  try {
+    // 先获取用户可访问的机构列表
+    const accRes = await dataPermissionApi.getAccessibleOrgs()
+    accessibleOrgIds.value = (accRes as any).data?.data || []
+
+    // 获取所有机构
+    const res = await organizationApi.getTree()
+    const allOrgs: any[] = (res as any).data?.data || []
+
+    // 如果有权限限制，过滤机构列表
+    if (accessibleOrgIds.value.length > 0) {
+      orgList.value = allOrgs.filter((org: any) => accessibleOrgIds.value.includes(org.id))
+    } else {
+      // 空数组表示全部权限，显示所有机构
+      orgList.value = allOrgs
+    }
+  } catch (e) {
+    console.error('加载机构列表失败:', e)
+  }
+}
+
+// 根据orgId获取机构名称
+const getOrgName = (orgId: string | null) => {
+  if (!orgId) return '-'
+  const org = orgList.value.find((o: any) => o.id === orgId)
+  return org?.name || '-'
+}
+
 onMounted(() => {
   fetchData()
+  loadOrganizations()
 })
 </script>
 

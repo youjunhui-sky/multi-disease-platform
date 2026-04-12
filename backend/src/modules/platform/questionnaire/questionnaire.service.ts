@@ -35,13 +35,21 @@ export class QuestionnaireService {
    * 分页查询问卷列表
    */
   async findAll(query: QueryQuestionnaireDto) {
-    const { keyword, page = 1, pageSize = 20 } = query;
+    const { keyword, page = 1, pageSize = 20, orgId, accessibleOrgs } = query;
     const queryBuilder = this.questionnaireRepo.createQueryBuilder('q');
 
     if (keyword) {
       queryBuilder.andWhere('(q.title LIKE :keyword OR q.description LIKE :keyword)', {
         keyword: `%${keyword}%`,
       });
+    }
+
+    if (orgId) {
+      // 用户指定了机构，按指定机构过滤
+      queryBuilder.andWhere('q.orgId = :orgId', { orgId });
+    } else if (accessibleOrgs && accessibleOrgs.length > 0) {
+      // 用户未指定机构但有权限限制，按可访问机构过滤
+      queryBuilder.andWhere('q.orgId IN (:...accessibleOrgs)', { accessibleOrgs });
     }
 
     queryBuilder.andWhere('q.deletedAt IS NULL');

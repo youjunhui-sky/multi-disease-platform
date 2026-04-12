@@ -25,6 +25,9 @@ export class Questionnaire {
   @Column({ type: 'int', nullable: true, name: 'creator_id', comment: '创建人ID' })
   creatorId: number | null;
 
+  @Column({ type: 'uuid', nullable: true, name: 'org_id', comment: '机构ID' })
+  orgId: string | null;
+
   @Column({ type: 'boolean', default: false, name: 'published', comment: '是否发布' })
   published: boolean;
 

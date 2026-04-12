@@ -123,7 +123,8 @@
       "Bash(curl -u \"root:You@890209\" ssh://root@36.111.159.23/mnt/sdc/gitrepos/demo3.git/info/refs)",
       "Bash(rm -rf d:/git/multi-disease-platform/frontend/node_modules)",
       "Bash(rm -f d:/git/multi-disease-platform/frontend/package-lock.json)",
-      "Bash(PGPASSWORD=1223 psql -h 36.111.159.23 -U postgres -d mdp -f \"d:/git/multi-disease-platform/backend/sql/questionnaire-tables.sql\")"
+      "Bash(PGPASSWORD=1223 psql -h 36.111.159.23 -U postgres -d mdp -f \"d:/git/multi-disease-platform/backend/sql/questionnaire-tables.sql\")",
+      "Bash(git config:*)"
     ]
   }
 }
